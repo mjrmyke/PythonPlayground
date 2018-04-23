@@ -1,0 +1,110 @@
+<html>
+  <head>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+  </head>
+  
+  <header><title>Wemo Devices</title></header>
+
+<body>
+<div id="loading" style="display: block; width: 250px; height: 250px; background-color: green;">
+
+  Loading Wemo Devices....
+
+</div>
+
+<div id="deviceContainer" style="display: none; width: 500px; height: 500px; background-color: teal;">
+  <table id="deviceList">
+    <tr>
+      <th>
+        Device
+      </th>
+      <th>
+        On
+      </th>
+      <th>
+        Off
+      </th>
+    </tr>
+
+  </table>
+
+
+  <button name="act" id="actButton"> Submit Actions </button>
+
+</div>
+
+
+
+</body>
+
+<script>
+$(document).ready(function() {
+
+  //Ajax call to get list of Wemo Devices
+  //Takes up to 10 seconds to hear back from each Device
+  $.ajax({url: "/api/getdevices", success: function(result){
+    $('#deviceContainer').css('display','inline');
+    $('#loading').css('display','none');
+  
+    var checkBoxOn = "idOn-"
+    var checkBoxOff = "idOff-"
+  
+    for (var i = 0; i< result.devices.length; i++) {
+      $('#deviceList').append('<tr><td>' + result.devices[i] + '</td>' +
+                                     '<td><input type="radio" name='+result.devices[i]+' id="' + checkBoxOn + result.devices[i] +'" value="1"/></td>' +
+                                     '<td><input type="radio" name='+result.devices[i]+' id="' + checkBoxOff + result.devices[i] +'" value="0"/></td></tr>'
+                                          );
+    }
+  
+  }})
+
+  // 
+  $("#actButton").click(function(){
+    alert("The button was clicked.");
+    var devicelist = [];
+
+    //get list of devices names in table
+    $("#deviceList tr").each(function(){
+      devicelist.push($(this).find("td:first").text());
+    });
+    
+    var devicesToTurnOn = [];
+    var devicesToTurnOff = [];
+    var checkBoxOn = "idOn-"
+    var checkBoxOff = "idOff-"
+
+    for (var i = 1; i < devicelist.length; i++){
+      
+      if ($('input[name='+devicelist[i]+']:checked').val() == "1") {
+        devicesToTurnOn.push(devicelist[i]);
+      } else if ($('input[name='+devicelist[i]+']:checked').val()== "0") {
+        devicesToTurnOff.push(devicelist[i]);
+      }
+    }
+
+
+     console.log(devicesToTurnOn);
+     console.log(devicesToTurnOff);
+     devicesToTurnOn = JSON.stringify(devicesToTurnOn);
+     devicesToTurnOff = JSON.stringify(devicesToTurnOff);
+
+    data = {
+      "devicesToTurnOn":devicesToTurnOn,
+      "devicesToTurnOff":devicesToTurnOff
+    }
+    console.log(data);
+
+    $.post('/api/deviceactions', function(data, status){
+      alert("Data:" + data + "\mStatus: " + status);
+    });
+
+
+
+});
+
+})
+
+
+
+</script>
+</html>
