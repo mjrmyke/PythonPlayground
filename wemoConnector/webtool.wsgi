@@ -91,7 +91,7 @@ def wemoActionsHandler():
             # data = request.json()
             # sender = request.json['sender']
             # receiver = request.json['receiver']
-            data = request.json['message']
+            data = request.json
             print data
         except:
             print "could not decode json"
